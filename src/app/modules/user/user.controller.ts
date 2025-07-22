@@ -2,7 +2,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextFunction, Request, Response } from "express";
 import httpStatus from "http-status-codes";
+import { JwtPayload } from "jsonwebtoken";
+import envVars from "../../config/env";
 import { catchAsync } from "../../utils/catchAsync";
+import { verifyToken } from "../../utils/jwt";
 import { sendResponse } from "../../utils/sendResponse";
 import { userServices } from "./user.service";
 
@@ -35,6 +38,25 @@ sendResponse(res,{
 })
 })
 
+const updateUser=catchAsync(async(req:Request,res:Response,next: NextFunction)=>{
+    const userId=req.params.id;
+    const token=req.headers.authorization;
+    const verifiedToken=verifyToken(token as string,envVars.JWT_ACCESS_SECRET) as JwtPayload;
+    const payload=req.body;
+
+    const user=await userServices.updateUser(userId,payload,verifiedToken);
+// res.status(httpStatus.CREATED).json({
+//     message:"User created successfully",
+//     user
+// });
+sendResponse(res,{
+    statusCode:httpStatus.OK,
+    success:true,
+    message:"User updated successfully",
+    data:user
+})
+})
+
 const getAllUsers=catchAsync(async(req:Request,res:Response,next: NextFunction)=>{
     const result= await userServices.getAllUsers();
     // res.status(httpStatus.OK).json({
@@ -53,7 +75,8 @@ const getAllUsers=catchAsync(async(req:Request,res:Response,next: NextFunction)=
 
 export const userControllers={
  createUser,
- getAllUsers
+ getAllUsers,
+ updateUser
 }
 
 //route matching-> controller->service->model->db

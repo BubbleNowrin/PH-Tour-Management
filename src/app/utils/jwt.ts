@@ -11,7 +11,7 @@ return token;
 }
 
 
-export const verifiedToken=(token:string,secret:string)=>{
+export const verifyToken=(token:string,secret:string)=>{
     const verifiedToken =jwt.verify(token,secret);
 
     return verifiedToken;
